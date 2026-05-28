@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACKHAWK - Bestellterminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+            background-image: grey;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        /* Cake Rain Animation */
+        .cake-rain {
+            position: fixed;
+            top: -50px;
+            font-size: 2em;
+            opacity: 0.7;
+            pointer-events: none;
+            animation: rainFall linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rainFall {
+            0% {
+                transform: translateY(-50px) rotate(0deg);
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .terminal-switcher {
+            margin-bottom: 20px;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #444;
+        }
+
+        .terminal-number {
+            color: #888;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 50px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+
+        .terminal-number.active {
+            color: #d4af37;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 22px;
+            background: #1a1a1a;
+            border: 2px solid #555;
+            border-radius: 17px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .toggle-switch:hover {
+            border-color: #777;
+        }
+
+        .toggle-switch.active {
+            border-color: #d4af37;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.7),
+                0 0 8px rgba(212,175,55,0.4);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: -2.5px;
+            left: -1px;
+            width: 28px;
+            height: 22px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            border-radius: 14px;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .toggle-switch.terminal-2 .toggle-slider {
+            left: 38px;
+        }
+
+        .containers-wrapper {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            min-height: 1200px;
+        }
+
+        .container {
+            position: absolute;
+            width: 100%;
+            max-width: 900px;
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+            pointer-events: auto;
+            background: linear-gradient(135deg, #3a3939 0%, #8b1c1c 100%);
+            background-image: grey;
+            border: 2px solid #d4af37;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 0 20px rgba(0,0,0,0.9),
+                0 8px 32px rgba(0,0,0,0.8);
+            padding: 24px;
+            border-radius: 0;
+        }
+
+        .container.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.02) 50%, transparent 100%);
+            pointer-events: none;
+        }
+
+        h1 {
+            text-align: center;
+            color: #d4af37;
+            margin-bottom: 4px;
+            font-size: 26px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(212,175,55,0.4);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 18px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #777;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #555;
+            background: #0a0a0a;
+            color: #666;
+            border-radius: 2px;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.7);
+        }
+
+        input[type="number"] {
+            -webkit-appearance: textfield;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+            display: none;
+        }
+
+        input[type="number"]::-moz-spin-up,
+        input[type="number"]::-moz-spin-down {
+            display: none;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: #111;
+            color: #666;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.7),
+                0 0 8px rgba(212,175,55,0.4);
+        }
+
+        input::placeholder {
+            color: #444;
+        }
+
+        input::-webkit-input-placeholder {
+            color: #444;
+        }
+
+        input:-moz-placeholder {
+            color: #444;
+        }
+
+        input::-moz-placeholder {
+            color: #444;
+        }
+
+        .munitions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 18px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .munitions-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .munitions-grid::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-radius: 0;
+        }
+
+        .munitions-grid::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 0;
+        }
+
+        .munitions-grid::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+
+        .munition-item {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            padding: 10px;
+            border: 1px solid #444;
+            border-left: 3px solid #d4af37;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 4px 8px rgba(0,0,0,0.6);
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        .munition-item:hover {
+            border-color: #d4af37;
+            border-left-width: 4px;
+            background: linear-gradient(135deg, #252525 0%, #151515 100%);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                0 0 12px rgba(212,175,55,0.3);
+        }
+
+        .munition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 7px;
+            gap: 5px;
+        }
+
+        .munition-name {
+            font-weight: 700;
+            color: #d4af37;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .munition-price {
+            color: #ff6b35;
+            font-weight: 700;
+            font-size: 11px;
+            white-space: nowrap;
+            text-shadow: 0 0 4px rgba(255,107,53,0.4);
+        }
+
+        .munition-input {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .munition-input input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #444;
+            background: #050505;
+            color: #888;
+            border-radius: 2px;
+            font-size: 12px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .munition-input input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.7),
+                0 0 6px rgba(212,175,55,0.3);
+        }
+
+        .quantity-label {
+            font-size: 10px;
+            color: #888;
+            min-width: 28px;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #0f0f0f 0%, #050505 100%);
+            border: 2px solid #d4af37;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 0 15px rgba(212,175,55,0.2);
+            color: #888;
+            padding: 14px;
+            border-radius: 2px;
+            margin-bottom: 14px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            border-top: 1px solid #d4af37;
+            padding-top: 8px;
+            font-size: 14px;
+            color: #d4af37;
+        }
+
+        .summary-title {
+            opacity: 0.9;
+            color: #777;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: 1px solid #555;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            color: #888;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 4px 8px rgba(0,0,0,0.6);
+        }
+
+        button:active {
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.8);
+            transform: translateY(1px);
+        }
+
+        .btn-reset {
+            border-color: #cc4422;
+            background: linear-gradient(135deg, #2a1410 0%, #1a0a00 100%);
+            color: #ff6b35;
+            text-shadow: 0 0 4px rgba(255,107,53,0.4);
+        }
+
+        .btn-reset:hover {
+            border-color: #ff6b35;
+            background: linear-gradient(135deg, #3a2420 0%, #2a1a10 100%);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 0 12px rgba(255,107,53,0.3);
+        }
+
+        .btn-send {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #2a3a1a 0%, #1a2a10 100%);
+            border-color: #6ab822;
+            color: #9ccc33;
+            font-size: 13px;
+            padding: 12px;
+            text-shadow: 0 0 4px rgba(156,204,51,0.4);
+        }
+
+        .btn-send:hover {
+            border-color: #9ccc33;
+            background: linear-gradient(135deg, #3a4a2a 0%, #2a3a20 100%);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 0 12px rgba(156,204,51,0.3);
+        }
+
+        .error {
+            color: #ff6b35;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+            background: rgba(255,107,53,0.1);
+            padding: 8px;
+            border: 1px solid #cc4422;
+            border-radius: 2px;
+        }
+
+        .success {
+            display: none;
+            background: rgba(156,204,51,0.1);
+            color: #9ccc33;
+            padding: 10px;
+            border-radius: 2px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 12px;
+            border: 1px solid #6ab822;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #d4af37;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        /* Terminal 2 - Hello Kitty Style */
+        #terminal2 {
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe6f0 50%, #f5d9e6 100%) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+
+        #terminal2 h1 {
+            color: #ff69b4;
+            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2), 0 0 10px rgba(255, 105, 180, 0.3);
+        }
+
+        #terminal2 .subtitle {
+            color: #c44470;
+            border-bottom-color: #E8B2C5;
+        }
+
+        #terminal2 .form-group label {
+            color: #c73266;
+        }
+
+        #terminal2 input[type="text"],
+        #terminal2 input[type="number"] {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #ffb6d9;
+            color: #b8164f;
+        }
+
+        #terminal2 input[type="text"]:focus,
+        #terminal2 input[type="number"]:focus {
+            border-color: #ff69b4;
+            background: #fffbfc;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.05),
+                0 0 8px rgba(255, 105, 180, 0.4);
+        }
+
+        #terminal2 .munition-item {
+            background: linear-gradient(135deg, #fffbfc 0%, #fff5f7 100%);
+            border-color: #ffb6d9;
+            border-left-color: #ff69b4;
+        }
+
+        #terminal2 .munition-item:hover {
+            background: linear-gradient(135deg, #ffe6f0 0%, #ffcce6 100%);
+            border-color: #ff69b4;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                0 0 12px rgba(255, 105, 180, 0.4);
+        }
+
+        #terminal2 .munition-name {
+            color: #ff1493;
+        }
+
+        #terminal2 .munition-price {
+            color: #8d2f5e;
+            text-shadow: 0 0 4px rgba(255, 105, 180, 0.4);
+        }
+
+        #terminal2 .munition-input input {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #ffb6d9;
+            color: #d95a9b;
+        }
+
+        #terminal2 .munition-input input:focus {
+            border-color: #ff69b4;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.05),
+                0 0 6px rgba(255, 105, 180, 0.4);
+        }
+
+        #terminal2 .summary {
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe6f0 100%);
+            border-color: #ff69b4;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                0 0 15px rgba(255, 105, 180, 0.2);
+            color: #d95a9b;
+        }
+
+        #terminal2 .summary-row:last-child {
+            border-top-color: #ff69b4;
+            color: #ff1493;
+        }
+
+        #terminal2 .summary-title {
+            color: #ff69b4;
+        }
+
+        #terminal2 .btn-reset {
+            border-color: #ffb6d9;
+            background: linear-gradient(135deg, #ffe6f0 0%, #ffd9e6 100%);
+            color: #ff69b4;
+            text-shadow: 0 0 4px rgba(255, 105, 180, 0.3);
+        }
+
+        #terminal2 .btn-reset:hover {
+            border-color: #ff69b4;
+            background: linear-gradient(135deg, #ffcce6 0%, #ffb6d9 100%);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                0 0 12px rgba(255, 105, 180, 0.4);
+        }
+
+        #terminal2 .btn-send {
+            background: linear-gradient(135deg, #ffb6d9 0%, #ffa0cc 100%);
+            border-color: #ff69b4;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(255, 105, 180, 0.3);
+        }
+
+        #terminal2 .btn-send:hover {
+            border-color: #ff1493;
+            background: linear-gradient(135deg, #ff99cc 0%, #ff85c1 100%);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                0 0 12px rgba(255, 105, 180, 0.5);
+        }
+
+        #terminal2 .terminal-switcher {
+            background: rgba(255, 255, 255, 0.5);
+            border-bottom-color: #ffb6d9;
+        }
+
+        #terminal2 .terminal-number {
+            color: #d95a9b;
+        }
+
+        #terminal2 .terminal-number.active {
+            color: #ff1493;
+        }
+
+        #terminal2 .toggle-switch {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: #ffb6d9;
+        }
+
+        #terminal2 .toggle-switch:hover {
+            border-color: #ff85c1;
+        }
+
+        #terminal2 .toggle-switch.active {
+            border-color: #ff69b4;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.05),
+                0 0 8px rgba(255, 105, 180, 0.4);
+        }
+
+        #terminal2 .toggle-slider {
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Containers Wrapper -->
+    <div class="containers-wrapper">
+        <!-- Terminal 1 -->
+        <div class="container" id="terminal1" data-terminal="1">
+            <!-- Terminal Switcher -->
+            <div class="terminal-switcher">
+                <span class="terminal-number active" id="term1Label">MUNITION</span>
+                <div class="toggle-switch active" id="terminalToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="terminal-number" id="term2Label">BACKSTUBE</span>
+            </div>
+
+            <h1>BLACKHAWK AMMUNITION</h1>
+            <p class="subtitle">Bestellterminal</p>
+
+            <div class="success" id="successMessage1">✓ Bestellung versendet!</div>
+            <div class="error" id="errorMessage1"></div>
+            <div class="loading" id="loadingMessage1">Wird versendet...</div>
+
+            <form id="orderForm1">
+                <div class="form-group">
+                    <label for="customerName1">Kundenname</label>
+                    <input type="text" id="customerName1" placeholder="Name" required>
+                </div>
+
+                <div class="munitions-grid" id="munitionsGrid1">
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.22 LR</span>
+                            <span class="munition-price">$200</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="200" data-name=".22 LR (20er Pack)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.38 Special</span>
+                            <span class="munition-price">$200</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="200" data-name=".38 Special (38x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.357 Magnum</span>
+                            <span class="munition-price">$400</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="400" data-name=".357 Magnum (38x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.44 Magnum</span>
+                            <span class="munition-price">$400</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="400" data-name=".44 Magnum (38x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.45 ACP</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name=".45 ACP (38x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.50 AE</span>
+                            <span class="munition-price">$400</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="400" data-name=".50 AE (38x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">9x19 mm</span>
+                            <span class="munition-price">$250</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="250" data-name="9x19 mm (30x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">9x39 mm</span>
+                            <span class="munition-price">$550</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="550" data-name="9x39 mm (30x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">5.45x39 mm</span>
+                            <span class="munition-price">$550</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="550" data-name="5.45x39 mm (30x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">5.56 NATO ★</span>
+                            <span class="munition-price">$550</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="550" data-name="5.56x45 mm NATO (30x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">7.62×39 mm</span>
+                            <span class="munition-price">$600</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="600" data-name="7.62x39 mm (30x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.308 // 7.62×51 mm</span>
+                            <span class="munition-price">$800</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="800" data-name="7.62x51 mm NATO (20x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">7.62×54 mmR</span>
+                            <span class="munition-price">$600</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="600" data-name="7.62x54 mmR (28x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">7.92×57 mm</span>
+                            <span class="munition-price">$650</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="650" data-name="7.92x57 mm (28x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.30-06 Springfield</span>
+                            <span class="munition-price">$650</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="650" data-name=".30-06 Springfield (20x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">.338 Lapua Magnum</span>
+                            <span class="munition-price">$1000</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="1000" data-name=".338 Lapua Magnum (20x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">12 Gauge</span>
+                            <span class="munition-price">$200</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="200" data-name="12 Gauge (28x Patronen)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">40×46 mm</span>
+                            <span class="munition-price">$1500</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="1500" data-name="40x46 mm Granate (25/250 Stk)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">PG-7M Rakete</span>
+                            <span class="munition-price">$2500</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="2500" data-name="PG-7M Rakete (25/250 Stk)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">OG-7V Rakete</span>
+                            <span class="munition-price">$2000</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="2000" data-name="OG-7V Rakete (28/188 Stk)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Explosiv Pfeile</span>
+                            <span class="munition-price">$550</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="550" data-name="Explosiv Pfeile / Bolzen (28/188 Stk)" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label">Pack</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-row">
+                        <span class="summary-title">Pakete:</span>
+                        <span id="itemCount1">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-title">Gesamt:</span>
+                        <span id="totalPrice1">$0</span>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="btn-reset" id="resetBtn1">Zurücksetzen</button>
+                    <button type="submit" class="btn-send" id="sendBtn1">Bestellung senden</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Terminal 2 -->
+        <div class="container hidden" id="terminal2" data-terminal="2">
+            <!-- Terminal Switcher -->
+            <div class="terminal-switcher">
+                <span class="terminal-number" id="term1Label2">MUNITION</span>
+                <div class="toggle-switch terminal-2" id="terminalToggle2">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="terminal-number active" id="term2Label2">BACKSTUBE</span>
+            </div>
+
+            <img src="https://media.discordapp.net/attachments/1404481708065030219/1506319695882747904/emilysbackstube.png?ex=6a0dd509&is=6a0c8389&hm=13c55b5885a5fffd4fbd0816d965e4923ea3d335ea8fa5dbb8310c62716fe60c&=&format=webp&quality=lossless&width=400&height=400"
+                 alt="Emily's Backstube Logo"
+                 style="position: absolute; top: 16px; right: 16px; width: 130px; height: 130px; border-radius: 50%; border: 3px solid #ff69b4; box-shadow: 0 0 16px rgba(255,105,180,0.6), 0 4px 10px rgba(0,0,0,0.15); object-fit: cover; z-index: 10; pointer-events: none;">
+            <h1>🍰 🥮 EMILY's BACKSTUBE 🥧 🎂</h1>
+            <p class="subtitle">Bestellterminal</p>
+
+            <div class="success" id="successMessage2">✓ Bestellung versendet!</div>
+            <div class="error" id="errorMessage2"></div>
+            <div class="loading" id="loadingMessage2">Wird versendet...</div>
+
+            <form id="orderForm2">
+                <div class="form-group">
+                    <label for="customerName2">Kundenname</label>
+                    <input type="text" id="customerName2" placeholder="Name" required>
+                </div>
+
+                <div class="munitions-grid" id="munitionsGrid2">
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Frisches Brot</span>
+                            <span class="munition-price">$500</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="500" data-name="Frisches Brot" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Schokoladenkuchen</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name="Schokoladenkuchen" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Käsekuchen</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name="Käsekuchen" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Bananenkuchen</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name="Bananenkuchen" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Apfelkuchen</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name="Apfelkuchen" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Cremeschnitte</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name="Cremeschnitte" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Lagmintons</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name="Lagmintons" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Obstkuchen</span>
+                            <span class="munition-price">$300</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="300" data-name="Obstkuchen" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Panackes</span>
+                            <span class="munition-price">$350</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="350" data-name="Panackes" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Schokoroulade</span>
+                            <span class="munition-price">$280</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="280" data-name="Schokoroulade" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Teegebäck</span>
+                            <span class="munition-price">$170</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="170" data-name="Teegebäck" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Baklava</span>
+                            <span class="munition-price">$200</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="200" data-name="Baklava" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Kaffee</span>
+                            <span class="munition-price">$150</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="150" data-name="Kaffee" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Tee</span>
+                            <span class="munition-price">$150</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="150" data-name="Tee" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Espresso</span>
+                            <span class="munition-price">$150</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="150" data-name="Espresso" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Heiße Schokolade</span>
+                            <span class="munition-price">$170</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="170" data-name="Heiße Schokolade" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+
+                    <div class="munition-item">
+                        <div class="munition-header">
+                            <span class="munition-name">Englischer Tee</span>
+                            <span class="munition-price">$170</span>
+                        </div>
+                        <div class="munition-input">
+                            <input type="number" class="munition-qty" data-price="170" data-name="Englischer Tee" min="0" value="0" placeholder="Menge">
+                            <span class="quantity-label"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-row">
+                        <span class="summary-title">Artikel:</span>
+                        <span id="itemCount2">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-title">Gesamt:</span>
+                        <span id="totalPrice2">$0</span>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="btn-reset" id="resetBtn2">Zurücksetzen</button>
+                    <button type="submit" class="btn-send" id="sendBtn2">Bestellung senden</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Separate Webhook URLs für jedes Terminal
+        const DISCORD_WEBHOOKS = {
+            1: 'https://discord.com/api/webhooks/1506008696709189795/8CcyhuVYMUjlyUxHv93TORXtOyhujfNsNF2fCx9y8iNbnYB_l3jb_5Z7A65QLYm54AmS',
+            2: 'https://discord.com/api/webhooks/1506313389650088086/PWzSW5Z8M-9GYuUauRt0qSg5uKHPjf4WqYAW9tfKmnMEDRwLpOzzdYtT57lJ0GTeGlRc'
+        };
+
+        const terminalToggle = document.getElementById('terminalToggle');
+        const terminalToggle2 = document.getElementById('terminalToggle2');
+        const terminal1 = document.getElementById('terminal1');
+        const terminal2 = document.getElementById('terminal2');
+        const term1Label = document.getElementById('term1Label');
+        const term2Label = document.getElementById('term2Label');
+        const term1Label2 = document.getElementById('term1Label2');
+        const term2Label2 = document.getElementById('term2Label2');
+
+        let currentTerminal = 1;
+
+        let cakeRainIntervalId = null;
+
+        function stopCakeRain() {
+            if (cakeRainIntervalId) {
+                clearInterval(cakeRainIntervalId);
+                cakeRainIntervalId = null;
+            }
+            document.querySelectorAll('.cake-rain').forEach(cake => cake.remove());
+        }
+
+        function startCakeRain() {
+            stopCakeRain();
+            generateCakeRain();
+            cakeRainIntervalId = setInterval(generateSingleCake, 2000);
+        }
+
+        function switchTerminal(terminalNum) {
+            currentTerminal = terminalNum;
+            
+            if (currentTerminal === 1) {
+                terminal1.classList.remove('hidden');
+                terminal2.classList.add('hidden');
+                terminalToggle.classList.add('active');
+                terminalToggle.classList.remove('terminal-2');
+                if (terminalToggle2) {
+                    terminalToggle2.classList.add('active');
+                    terminalToggle2.classList.remove('terminal-2');
+                }
+                if (term1Label) term1Label.classList.add('active');
+                if (term2Label) term2Label.classList.remove('active');
+                if (term1Label2) term1Label2.classList.add('active');
+                if (term2Label2) term2Label2.classList.remove('active');
+                stopCakeRain();
+            } else {
+                terminal1.classList.add('hidden');
+                terminal2.classList.remove('hidden');
+                terminalToggle.classList.remove('active');
+                terminalToggle.classList.add('terminal-2');
+                if (terminalToggle2) {
+                    terminalToggle2.classList.remove('active');
+                    terminalToggle2.classList.add('terminal-2');
+                }
+                if (term1Label) term1Label.classList.remove('active');
+                if (term2Label) term2Label.classList.add('active');
+                if (term1Label2) term1Label2.classList.remove('active');
+                if (term2Label2) term2Label2.classList.add('active');
+                startCakeRain();
+            }
+        }
+
+        // Terminal Switch - Terminal 1 Switcher
+        terminalToggle.addEventListener('click', () => {
+            currentTerminal = currentTerminal === 1 ? 2 : 1;
+            switchTerminal(currentTerminal);
+        });
+
+        // Terminal Switch - Terminal 2 Switcher
+        if (terminalToggle2) {
+            terminalToggle2.addEventListener('click', () => {
+                currentTerminal = currentTerminal === 1 ? 2 : 1;
+                switchTerminal(currentTerminal);
+            });
+        }
+
+        // Initialize each terminal
+        function initializeTerminal(terminalNum) {
+            const orderForm = document.getElementById(`orderForm${terminalNum}`);
+            const customerNameInput = document.getElementById(`customerName${terminalNum}`);
+            const resetBtn = document.getElementById(`resetBtn${terminalNum}`);
+            const munitionInputs = document.querySelectorAll(`#terminal${terminalNum} .munition-qty`);
+            const successMessage = document.getElementById(`successMessage${terminalNum}`);
+            const errorMessage = document.getElementById(`errorMessage${terminalNum}`);
+            const loadingMessage = document.getElementById(`loadingMessage${terminalNum}`);
+
+            // Event Listener für Preisberechnung
+            munitionInputs.forEach(input => {
+                input.addEventListener('change', calculateTotal);
+                input.addEventListener('input', calculateTotal);
+            });
+
+            // Preisberechnung
+            function calculateTotal() {
+                let total = 0;
+                let itemCount = 0;
+
+                munitionInputs.forEach(input => {
+                    const quantity = parseInt(input.value) || 0;
+                    const price = parseFloat(input.dataset.price);
+                    total += quantity * price;
+                    if (quantity > 0) itemCount++;
+                });
+
+                document.getElementById(`totalPrice${terminalNum}`).textContent = '$' + total.toFixed(0);
+                document.getElementById(`itemCount${terminalNum}`).textContent = itemCount;
+            }
+
+            // Zurücksetzen Button
+            resetBtn.addEventListener('click', () => {
+                munitionInputs.forEach(input => {
+                    input.value = 0;
+                });
+                calculateTotal();
+            });
+
+            // Formular absenden
+            orderForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const customerName = customerNameInput.value.trim();
+                if (!customerName) {
+                    showError('Bitte geben Sie einen Kundennamen ein!');
+                    return;
+                }
+
+                const order = {
+                    customerName: customerName,
+                    items: [],
+                    totalPrice: 0,
+                    terminal: terminalNum
+                };
+
+                munitionInputs.forEach(input => {
+                    const quantity = parseInt(input.value) || 0;
+                    if (quantity > 0) {
+                        const price = parseFloat(input.dataset.price);
+                        order.items.push({
+                            name: input.dataset.name,
+                            quantity: quantity,
+                            price: price,
+                            subtotal: quantity * price
+                        });
+                        order.totalPrice += quantity * price;
+                    }
+                });
+
+                if (order.items.length === 0) {
+                    showError('Bitte wählen Sie mindestens einen Artikel aus!');
+                    return;
+                }
+
+                await sendToDiscord(order);
+            });
+
+            async function sendToDiscord(order) {
+                loadingMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+
+                let itemsDescription = '';
+                order.items.forEach(item => {
+                    itemsDescription += `• **${item.name}** - ${item.quantity}x @ $${item.price.toFixed(0)} = $${item.subtotal.toFixed(0)}\n`;
+                });
+
+                // Unterschiedliche Designs für jedes Terminal
+                let embed = {};
+                
+                if (order.terminal === 1) {
+                    // Terminal 1 Design - Klassisch mit rotem Accent
+                    embed = {
+                        title: '📦 BLACKHAWK AMMUNITION - Neue Bestellung',
+                        description: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+                        color: 0x1a1a1a,
+                        fields: [
+                            {
+                                name: '**👤 Kundenname**',
+                                value: `${order.customerName}`,
+                                inline: false
+                            },
+                            {
+                                name: '**📦 Bestellte Artikel**',
+                                value: itemsDescription || 'Keine Artikel',
+                                inline: false
+                            },
+                            {
+                                name: '**💰 Gesamtpreis**',
+                                value: `$${order.totalPrice.toFixed(0)}`,
+                                inline: false
+                            }
+                        ],
+                        thumbnail: {
+                            url: 'https://media.discordapp.net/attachments/1170370034439303270/1504939749662654567/Z.png?ex=6a0d6d1c&is=6a0c1b9c&hm=48c3c53e4319293dde7101faaaa5b2711216d8accbb0d68cd25fd5ca0aa6f4c4&=&format=webp&quality=lossless&width=130&height=130'
+                        },
+                        footer: {
+                            text: 'BLACKHAWK AMMUNITION',
+                            icon_url: 'https://media.discordapp.net/attachments/1170370034439303270/1504939749662654567/Z.png?ex=6a0d6d1c&is=6a0c1b9c&hm=48c3c53e4319293dde7101faaaa5b2711216d8accbb0d68cd25fd5ca0aa6f4c4&=&format=webp&quality=lossless&width=130&height=130'
+                        },
+                        timestamp: new Date().toISOString()
+                    };
+                } else {
+                    // Terminal 2 Design - Modern mit grünem Accent
+                    embed = {
+                        title: '🍰 EMILYs BACKSTUBE - Neue Bestellung',
+                        description: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+                        color: 0xE8B2C5,
+                        fields: [
+                            {
+                                name: '**👤 Kundenname**',
+                                value: `${order.customerName}`,
+                                inline: false
+                            },
+                            {
+                                name: '**🍰 Bestellte Artikel**',
+                                value: itemsDescription || 'Keine Artikel',
+                                inline: false
+                            },
+                            {
+                                name: '**💰 Gesamtpreis**',
+                                value: `$${order.totalPrice.toFixed(0)}`,
+                                inline: false
+                            }
+                        ],
+                        image: {
+                            url: 'https://media.discordapp.net/attachments/1404481708065030219/1506319695882747904/emilysbackstube.png?ex=6a0dd509&is=6a0c8389&hm=13c55b5885a5fffd4fbd0816d965e4923ea3d335ea8fa5dbb8310c62716fe60c&=&format=webp&quality=lossless&width=400&height=400'
+                        },
+                        footer: {
+                            text: 'EMILYs BACKSTUBE',
+                            icon_url: 'https://media.discordapp.net/attachments/1404481708065030219/1506319695882747904/emilysbackstube.png?ex=6a0dd509&is=6a0c8389&hm=13c55b5885a5fffd4fbd0816d965e4923ea3d335ea8fa5dbb8310c62716fe60c&=&format=webp&quality=lossless&width=400&height=400'
+                        },
+                        timestamp: new Date().toISOString()
+                    };
+                }
+
+                try {
+                    const webhookUrl = DISCORD_WEBHOOKS[order.terminal];
+                    
+                    if (!webhookUrl || webhookUrl.includes('WEBHOOK_HERE')) {
+                        throw new Error(`Webhook für Terminal ${order.terminal} nicht konfiguriert!`);
+                    }
+
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ embeds: [embed] })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Discord Webhook Fehler');
+                    }
+
+                    loadingMessage.style.display = 'none';
+                    successMessage.style.display = 'block';
+
+                    setTimeout(() => {
+                        orderForm.reset();
+                        calculateTotal();
+                        successMessage.style.display = 'none';
+                    }, 2000);
+
+                } catch (error) {
+                    loadingMessage.style.display = 'none';
+                    showError('Fehler beim Versenden der Bestellung! Überprüfen Sie die Discord Webhook URLs.');
+                    console.error('Error:', error);
+                }
+            }
+
+            function showError(message) {
+                errorMessage.textContent = '❌ ' + message;
+                errorMessage.style.display = 'block';
+                loadingMessage.style.display = 'none';
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 4000);
+            }
+
+            calculateTotal();
+        }
+
+        // Cake Rain System - Kuchen-Regen Animation
+        function generateCakeRain() {
+            const cakeTypes = ['🧁', '🍰', '🎂', '🍪', '🧁', '🍰'];
+            
+            for (let i = 0; i < 30; i++) {
+                const cake = document.createElement('div');
+                cake.className = 'cake-rain';
+                cake.textContent = cakeTypes[Math.floor(Math.random() * cakeTypes.length)];
+                
+                // Random horizontal position
+                const leftPosition = Math.random() * 100;
+                cake.style.left = leftPosition + '%';
+                
+                // Random animation duration (8-15 seconds)
+                const duration = 8 + Math.random() * 7;
+                cake.style.animationDuration = duration + 's';
+                
+                // Random delay for staggered effect
+                const delay = Math.random() * 5;
+                cake.style.animationDelay = delay + 's';
+                
+                document.body.appendChild(cake);
+            }
+        }
+
+        function generateSingleCake() {
+            // Only generate if on Terminal 2
+            if (currentTerminal !== 2) return;
+            
+            const cakeTypes = ['🧁', '🍰', '🎂', '🍪', '🧁', '🍰'];
+            const cake = document.createElement('div');
+            cake.className = 'cake-rain';
+            cake.textContent = cakeTypes[Math.floor(Math.random() * cakeTypes.length)];
+            
+            const leftPosition = Math.random() * 100;
+            cake.style.left = leftPosition + '%';
+            
+            const duration = 8 + Math.random() * 7;
+            cake.style.animationDuration = duration + 's';
+            cake.style.animationDelay = '0s';
+            
+            document.body.appendChild(cake);
+            
+            setTimeout(() => {
+                cake.remove();
+            }, duration * 1000);
+        }
+
+        // Initialize both terminals
+        initializeTerminal(1);
+        initializeTerminal(2);
+    </script>
+</body>
+</html>
