@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BLACKHAWK / EMILY'S TERMINAL</title>
+    <link rel="shortcut icon" href="bilder/favicon_512.png" type="image/x-icon">
     <style>
         :root {
             --shell-bg: #0a0a0a;
@@ -807,8 +808,8 @@
         .settings-modal-card {
             width: min(960px, 100%);
             max-height: min(88vh, 860px);
-            background: linear-gradient(135deg, rgba(255,247,250,.98), rgba(255,231,241,.98));
-            border:1px solid rgba(255,105,180,.45);
+            background: linear-gradient(135deg, rgba(25,25,25,0.98), rgba(15,15,15,0.97));
+            border: 1px solid rgba(212, 175, 55, 0.34);
             border-radius: 24px;
             box-shadow: var(--shadow);
             padding: 16px;
@@ -816,7 +817,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            color:#6a2248;
+            color: var(--text);
         }
 
         .history-modal-card.theme-pink,
@@ -1033,17 +1034,32 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            margin-top: auto;
+        }
+
+        .history-actions .mini-button {
+            flex: 1;
+            width: 100%;
+            padding: 11px 13px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
         }
 
         .mini-button {
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            background: rgba(212, 175, 55, 0.08);
             color: var(--text);
             border-radius: 10px;
             padding: 9px 13px;
             font-size: 0.74rem;
             text-transform: uppercase;
             cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .mini-button:hover {
+            background: var(--gold, #d4af37);
+            color: #1a1a1a;
         }
 
         .mini-button.danger {
@@ -1171,7 +1187,7 @@
             position: absolute;
             inset: 0;
             cursor: pointer;
-            background: rgba(255,255,255,0.12);
+            background: rgba(64, 64, 64, 0.363);
             border: 1px solid rgba(255,255,255,0.14);
             border-radius: 999px;
             transition: background 0.25s ease, border-color 0.25s ease;
@@ -1479,8 +1495,8 @@
         }
 
         const DISCORD_WEBHOOKS = {
-            1: 'https://discord.com/api/webhooks/1506008696709189795/8CcyhuVYMUjlyUxHv93TORXtOyhujfNsNF2fCx9y8iNbnYB_l3jb_5Z7A65QLYm54AmS',
-            2: 'https://discord.com/api/webhooks/1506313389650088086/PWzSW5Z8M-9GYuUauRt0qSg5uKHPjf4WqYAW9tfKmnMEDRwLpOzzdYtT57lJ0GTeGlRc'
+            1: 'https://discord.com/api/webhooks/1525926091632541696/tdy6XQdWv1H1dzj5rE9MWDEkwR3svUjXW_BFSd3DqOeCMVjEyEcF8keC7Ey0fynqIisj?thread_id=1525925953241485494',
+            2: 'https://discord.com/api/webhooks/1525926091632541696/tdy6XQdWv1H1dzj5rE9MWDEkwR3svUjXW_BFSd3DqOeCMVjEyEcF8keC7Ey0fynqIisj?thread_id=1525926549872709776'
         };
 
         const appState = {
@@ -1693,7 +1709,7 @@
         }
 
         function clearTerminal(terminalNum) {
-            document.querySelectorAll(`#orderForm${terminalNum} .qty-input`).forEach(input => input.value = 0);
+            document.querySelectorAll(`#orderForm${terminalNum} .qty-input`).forEach(input => input.value = "");
             document.getElementById(`customerName${terminalNum}`).value = '';
             const orderIdInput = document.getElementById(`orderId${terminalNum}`);
             if (orderIdInput) orderIdInput.value = generateOrderId(terminalNum);
@@ -1932,6 +1948,9 @@
             const body = document.getElementById('orderViewBody');
             const overlay = document.getElementById('orderViewModalOverlay');
             if (!order || !body || !overlay) return;
+
+            const card = overlay.querySelector('.history-modal-card');
+            if (card) card.classList.toggle('theme-pink', appState.terminal === 2);
 
             body.innerHTML = `
                 <h4>${escapeHtml(order.customerName)}</h4>
