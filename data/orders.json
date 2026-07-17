@@ -1,0 +1,26 @@
+{
+  "orders": [
+    {
+      "id": "ORD-1001",
+      "customerName": "Mia Schneider",
+      "terminal": 1,
+      "createdAt": "2026-07-11T10:40:00Z",
+      "items": [
+        { "name": ".22 LR", "quantity": 2, "price": 200, "subtotal": 400 },
+        { "name": "9x19 mm", "quantity": 3, "price": 250, "subtotal": 750 }
+      ],
+      "totalPrice": 1150
+    },
+    {
+      "id": "ORD-1002",
+      "customerName": "Luca Berger",
+      "terminal": 2,
+      "createdAt": "2026-07-11T11:10:00Z",
+      "items": [
+        { "name": "Cola (Dose)", "quantity": 4, "price": 100, "subtotal": 400 },
+        { "name": "Cocktail The Island Special", "quantity": 2, "price": 200, "subtotal": 400 }
+      ],
+      "totalPrice": 800
+    }
+  ]
+}
